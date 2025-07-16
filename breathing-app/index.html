@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Breathing App</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      width: 100vw;
+      height: 100vh;
+      min-height: 100vh;
+      min-width: 100vw;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #B7E7A7;
+      /* cursor will be set by JS */
+    }
+    #breathCircle {
+      width: 200px;
+      height: 200px;
+      /* background will be set by JS */
+      border-radius: 50%;
+      /* box-shadow removed */
+      transition: none;
+      will-change: transform, width, height, background;
+      display: block;
+      /* cursor will be set by JS */
+    }
+  </style>
+</head>
+<body>
+  <div id="breathCircle"></div>
+  <script src="script.js"></script>
+</body>
+</html> 
