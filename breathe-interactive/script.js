@@ -31,12 +31,17 @@ class InteractiveBreathingApp {
   }
 
   createBrownNoise() {
-    const bufferSize = 4096;
+    const bufferSize = 2 * this.audioContext.sampleRate;
     const noiseBuffer = this.audioContext.createBuffer(1, bufferSize, this.audioContext.sampleRate);
     const output = noiseBuffer.getChannelData(0);
     
+    // Create proper brown noise
+    let lastOut = 0.0;
     for (let i = 0; i < bufferSize; i++) {
-      output[i] = Math.random() * 2 - 1;
+      let white = Math.random() * 2 - 1;
+      output[i] = (lastOut + (0.02 * white)) / 1.02;
+      lastOut = output[i];
+      output[i] *= 3.5;
     }
     
     this.brownNoise = this.audioContext.createBufferSource();
@@ -101,7 +106,7 @@ class InteractiveBreathingApp {
     circle.style.top = top + 'px';
     circle.style.width = size + 'px';
     circle.style.height = size + 'px';
-    circle.style.background = '#A8D5BA'; // Solid blue color
+    circle.style.background = '#A7C7E7'; // Solid blue color (same as original)
     
     // Store circle data with fixed center position
     const circleData = {
@@ -117,7 +122,11 @@ class InteractiveBreathingApp {
     
     // Start audio when first circle is created
     if (this.circles.length === 1 && this.gainNode) {
-      this.gainNode.gain.setValueAtTime(0.1, this.audioContext.currentTime);
+      // Resume audio context if suspended
+      if (this.audioContext.state === 'suspended') {
+        this.audioContext.resume();
+      }
+      this.gainNode.gain.setValueAtTime(0.12, this.audioContext.currentTime);
     }
     
     return circleData;
@@ -180,8 +189,8 @@ class InteractiveBreathingApp {
       // Update audio volume
       if (this.gainNode && this.circles.length > 0) {
         const volume = this.breathPhase === 'inhale' ? 
-          this.easeInOut(progress, 0.1, 0.3) : 
-          this.easeInOut(progress, 0.3, 0.1);
+          this.easeInOut(progress, 0.02, 0.12) : 
+          this.easeInOut(progress, 0.12, 0.02);
         
         this.gainNode.gain.setValueAtTime(volume, this.audioContext.currentTime);
       }
