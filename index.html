@@ -3,73 +3,107 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Multi-Apps Demo</title>
+    <title>Visual Poetry</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
     <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+        
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 2rem;
-            line-height: 1.6;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            width: 100vw;
+            height: 100vh;
             min-height: 100vh;
-            color: white;
+            min-width: 100vw;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: #B7E7A7;
+            font-family: 'Playfair Display', serif;
+            color: #2c5530;
         }
+        
         h1 {
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin: 0 0 3rem 0;
             text-align: center;
-            margin-bottom: 2rem;
-            font-size: 2.5rem;
+            letter-spacing: -0.02em;
         }
+        
         .projects {
-            display: grid;
-            gap: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            align-items: center;
         }
+        
         .project {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 1.5rem;
-            border-radius: 10px;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            transition: transform 0.2s;
+            text-align: center;
+            max-width: 400px;
         }
-        .project:hover {
-            transform: translateY(-2px);
-        }
+        
         .project h2 {
-            margin: 0 0 0.5rem 0;
-            color: #fff;
-        }
-        .project p {
+            font-size: 1.8rem;
+            font-weight: 400;
             margin: 0 0 1rem 0;
-            opacity: 0.9;
+            color: #2c5530;
         }
+        
+        .project p {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin: 0 0 2rem 0;
+            color: #4a6b4a;
+            font-weight: 400;
+        }
+        
         .project a {
             display: inline-block;
-            background: rgba(255, 255, 255, 0.2);
-            color: white;
+            background: #A8D5BA;
+            color: #2c5530;
             text-decoration: none;
-            padding: 0.5rem 1rem;
-            border-radius: 5px;
-            transition: background 0.2s;
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 400;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
         }
+        
         .project a:hover {
-            background: rgba(255, 255, 255, 0.3);
+            background: transparent;
+            border-color: #A8D5BA;
+            color: #2c5530;
+            transform: translateY(-2px);
+        }
+        
+        .emoji {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            display: block;
         }
     </style>
 </head>
 <body>
-    <h1>🎨 Multi-Apps Demo</h1>
+    <h1>Visual Poetry</h1>
     
     <div class="projects">
         <div class="project">
+            <span class="emoji">🌿</span>
             <h2>Breathing App</h2>
-            <p>A calming breathing exercise app with synchronized brown noise and visual feedback.</p>
+            <p>A calming breathing exercise with synchronized brown noise and visual feedback.</p>
             <a href="./breathing-app/">Launch App</a>
         </div>
         
         <!-- Add more projects here as you create them -->
         <!-- 
         <div class="project">
+            <span class="emoji">✨</span>
             <h2>Another App</h2>
             <p>Description of your next project.</p>
             <a href="./another-app/">Launch App</a>
