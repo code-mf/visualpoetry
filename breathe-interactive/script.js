@@ -12,6 +12,7 @@ class InteractiveBreathingApp {
     this.minSize = 100;
     this.maxSize = 400;
     this.CURSOR_PCT = 0.0333; // 3.33% of smaller dimension
+    this.isInverted = false; // false = black bg/white circles, true = white bg/black circles
     
     this.init();
   }
@@ -44,12 +45,31 @@ class InteractiveBreathingApp {
 
   setupCursors() {
     const body = document.body;
-    body.style.cursor = this.makeCursor('#A7C7E7'); // blue dot for background
+    const bgColor = this.isInverted ? '#000000' : '#FFFFFF';
+    const circleColor = this.isInverted ? '#FFFFFF' : '#000000';
+    
+    body.style.cursor = this.makeCursor(bgColor); // white/black dot for background
     
     // Set cursor for all existing circles
     this.circles.forEach(circle => {
-      circle.element.style.cursor = this.makeCursor('#B7E7A7'); // green dot for circles
+      circle.element.style.cursor = this.makeCursor(circleColor); // black/white dot for circles
     });
+  }
+
+  toggleTheme() {
+    this.isInverted = !this.isInverted;
+    
+    // Update background
+    const body = document.body;
+    body.style.background = this.isInverted ? '#FFFFFF' : '#000000';
+    
+    // Update all circles
+    this.circles.forEach(circle => {
+      circle.element.style.background = this.isInverted ? '#000000' : '#FFFFFF';
+    });
+    
+    // Update cursors
+    this.setupCursors();
   }
 
   createBrownNoise() {
@@ -107,6 +127,14 @@ class InteractiveBreathingApp {
     window.addEventListener('resize', () => {
       this.setupCursors();
     });
+
+    // Spacebar toggle for black/white theme
+    document.addEventListener('keydown', (e) => {
+      if (e.code === 'Space') {
+        e.preventDefault(); // Prevent page scroll
+        this.toggleTheme();
+      }
+    });
   }
 
   createCircle(x, y) {
@@ -122,7 +150,7 @@ class InteractiveBreathingApp {
     circle.style.top = top + 'px';
     circle.style.width = size + 'px';
     circle.style.height = size + 'px';
-    circle.style.background = '#A7C7E7'; // Solid blue color (same as original)
+    circle.style.background = '#FFFFFF'; // White circles
     
     // Store circle data with fixed center position
     const circleData = {
@@ -137,7 +165,8 @@ class InteractiveBreathingApp {
     document.body.appendChild(circle);
     
     // Set cursor for the new circle
-    circle.style.cursor = this.makeCursor('#B7E7A7'); // green dot for circles
+    const circleColor = this.isInverted ? '#FFFFFF' : '#000000';
+    circle.style.cursor = this.makeCursor(circleColor); // black/white dot for circles
     
     // Start audio when first circle is created
     if (this.circles.length === 1 && this.gainNode) {
