@@ -3,6 +3,7 @@ class InteractiveBreathingApp {
     this.circles = [];
     this.audioContext = null;
     this.brownNoise = null;
+    this.gainNode = null;
     this.isPlaying = false;
     this.breathPhase = 'inhale'; // 'inhale' or 'exhale'
     this.breathTime = 5000; // 5 seconds per phase
@@ -47,12 +48,12 @@ class InteractiveBreathingApp {
     filter.frequency.value = 100;
     filter.Q.value = 1;
     
-    const gainNode = this.audioContext.createGain();
-    gainNode.gain.value = 0.1;
+    this.gainNode = this.audioContext.createGain();
+    this.gainNode.gain.value = 0; // Start silent
     
     this.brownNoise.connect(filter);
-    filter.connect(gainNode);
-    gainNode.connect(this.audioContext.destination);
+    filter.connect(this.gainNode);
+    this.gainNode.connect(this.audioContext.destination);
     
     this.brownNoise.start();
     this.isPlaying = true;
@@ -93,27 +94,31 @@ class InteractiveBreathingApp {
     
     // Set initial position (centered on click)
     const size = this.baseSize;
-    circle.style.left = (x - size / 2) + 'px';
-    circle.style.top = (y - size / 2) + 'px';
+    const left = x - size / 2;
+    const top = y - size / 2;
+    
+    circle.style.left = left + 'px';
+    circle.style.top = top + 'px';
     circle.style.width = size + 'px';
     circle.style.height = size + 'px';
+    circle.style.background = '#A8D5BA'; // Solid blue color
     
-    // Set initial background color based on current breath phase
-    const progress = (Date.now() - this.lastBreathTime) / this.breathTime;
-    const color = this.getBreathColor(progress);
-    circle.style.background = color;
-    
-    // Store circle data
+    // Store circle data with fixed center position
     const circleData = {
       element: circle,
-      x: x - size / 2,
-      y: y - size / 2,
+      centerX: x,
+      centerY: y,
       size: size,
       scale: 1
     };
     
     this.circles.push(circleData);
     document.body.appendChild(circle);
+    
+    // Start audio when first circle is created
+    if (this.circles.length === 1 && this.gainNode) {
+      this.gainNode.gain.setValueAtTime(0.1, this.audioContext.currentTime);
+    }
     
     return circleData;
   }
@@ -123,6 +128,11 @@ class InteractiveBreathingApp {
     if (index !== -1) {
       this.circles.splice(index, 1);
       circleElement.remove();
+      
+      // Stop audio when all circles are deleted
+      if (this.circles.length === 0 && this.gainNode) {
+        this.gainNode.gain.setValueAtTime(0, this.audioContext.currentTime);
+      }
     }
   }
 
@@ -143,10 +153,11 @@ class InteractiveBreathingApp {
     circle.element.style.width = newSize + 'px';
     circle.element.style.height = newSize + 'px';
     
-    // Adjust position to keep center
-    const rect = circle.element.getBoundingClientRect();
-    circle.x = rect.left;
-    circle.y = rect.top;
+    // Keep the circle centered at its original position
+    const newLeft = circle.centerX - newSize / 2;
+    const newTop = circle.centerY - newSize / 2;
+    circle.element.style.left = newLeft + 'px';
+    circle.element.style.top = newTop + 'px';
   }
 
   startBreathingCycle() {
@@ -167,14 +178,12 @@ class InteractiveBreathingApp {
       });
       
       // Update audio volume
-      if (this.brownNoise && this.isPlaying) {
+      if (this.gainNode && this.circles.length > 0) {
         const volume = this.breathPhase === 'inhale' ? 
           this.easeInOut(progress, 0.1, 0.3) : 
           this.easeInOut(progress, 0.3, 0.1);
         
-        if (this.brownNoise.gain) {
-          this.brownNoise.gain.value = volume;
-        }
+        this.gainNode.gain.setValueAtTime(volume, this.audioContext.currentTime);
       }
       
       requestAnimationFrame(animate);
@@ -198,42 +207,14 @@ class InteractiveBreathingApp {
     circle.element.style.width = currentSize + 'px';
     circle.element.style.height = currentSize + 'px';
     
-    // Update position to keep center
-    const sizeDiff = currentSize - baseSize;
-    circle.element.style.left = (circle.x - sizeDiff / 2) + 'px';
-    circle.element.style.top = (circle.y - sizeDiff / 2) + 'px';
-    
-    // Update color
-    const color = this.getBreathColor(progress);
-    circle.element.style.background = color;
+    // Keep the circle centered at its original position
+    const newLeft = circle.centerX - currentSize / 2;
+    const newTop = circle.centerY - currentSize / 2;
+    circle.element.style.left = newLeft + 'px';
+    circle.element.style.top = newTop + 'px';
   }
 
-  getBreathColor(progress) {
-    const inhaleColor = '#A8D5BA'; // Soft green
-    const exhaleColor = '#B7E7A7'; // Lighter green
-    
-    if (this.breathPhase === 'inhale') {
-      return this.interpolateColor(exhaleColor, inhaleColor, progress);
-    } else {
-      return this.interpolateColor(inhaleColor, exhaleColor, progress);
-    }
-  }
 
-  interpolateColor(color1, color2, factor) {
-    const r1 = parseInt(color1.slice(1, 3), 16);
-    const g1 = parseInt(color1.slice(3, 5), 16);
-    const b1 = parseInt(color1.slice(5, 7), 16);
-    
-    const r2 = parseInt(color2.slice(1, 3), 16);
-    const g2 = parseInt(color2.slice(3, 5), 16);
-    const b2 = parseInt(color2.slice(5, 7), 16);
-    
-    const r = Math.round(r1 + (r2 - r1) * factor);
-    const g = Math.round(g1 + (g2 - g1) * factor);
-    const b = Math.round(b1 + (b2 - b1) * factor);
-    
-    return `rgb(${r}, ${g}, ${b})`;
-  }
 
   easeInOut(t, start, end) {
     const change = end - start;
