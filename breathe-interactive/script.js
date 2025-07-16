@@ -11,6 +11,7 @@ class InteractiveBreathingApp {
     this.baseSize = 200;
     this.minSize = 100;
     this.maxSize = 400;
+    this.CURSOR_PCT = 0.0333; // 3.33% of smaller dimension
     
     this.init();
   }
@@ -18,6 +19,7 @@ class InteractiveBreathingApp {
   init() {
     this.setupAudio();
     this.setupEventListeners();
+    this.setupCursors();
     this.startBreathingCycle();
   }
 
@@ -30,12 +32,30 @@ class InteractiveBreathingApp {
     }
   }
 
-  createBrownNoise() {
-    const bufferSize = 2 * this.audioContext.sampleRate;
-    const noiseBuffer = this.audioContext.createBuffer(1, bufferSize, this.audioContext.sampleRate);
-    const output = noiseBuffer.getChannelData(0);
+  makeCursor(color) {
+    const minDim = Math.min(window.innerWidth, window.innerHeight);
+    let diameter = Math.round(minDim * this.CURSOR_PCT);
+    if (diameter % 2 !== 0) diameter += 1; // ensure even
+    const radius = diameter / 2;
+    // SVG with center at (radius, radius), viewBox, and geometricPrecision
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${diameter}" height="${diameter}" viewBox="0 0 ${diameter} ${diameter}" shape-rendering="geometricPrecision"><circle cx="${radius}" cy="${radius}" r="${radius}" fill="${color}"/></svg>`;
+    return `url('data:image/svg+xml;utf8,${encodeURIComponent(svg)}') ${radius} ${radius}, auto`;
+  }
+
+  setupCursors() {
+    const body = document.body;
+    body.style.cursor = this.makeCursor('#A7C7E7'); // blue dot for background
     
-    // Create proper brown noise
+    // Set cursor for all existing circles
+    this.circles.forEach(circle => {
+      circle.element.style.cursor = this.makeCursor('#B7E7A7'); // green dot for circles
+    });
+  }
+
+  createBrownNoise() {
+    let bufferSize = 2 * this.audioContext.sampleRate;
+    let noiseBuffer = this.audioContext.createBuffer(1, bufferSize, this.audioContext.sampleRate);
+    let output = noiseBuffer.getChannelData(0);
     let lastOut = 0.0;
     for (let i = 0; i < bufferSize; i++) {
       let white = Math.random() * 2 - 1;
@@ -43,24 +63,15 @@ class InteractiveBreathingApp {
       lastOut = output[i];
       output[i] *= 3.5;
     }
-    
-    this.brownNoise = this.audioContext.createBufferSource();
-    this.brownNoise.buffer = noiseBuffer;
-    this.brownNoise.loop = true;
-    
-    const filter = this.audioContext.createBiquadFilter();
-    filter.type = 'lowpass';
-    filter.frequency.value = 100;
-    filter.Q.value = 1;
-    
-    this.gainNode = this.audioContext.createGain();
-    this.gainNode.gain.value = 0; // Start silent
-    
-    this.brownNoise.connect(filter);
-    filter.connect(this.gainNode);
-    this.gainNode.connect(this.audioContext.destination);
-    
-    this.brownNoise.start();
+    let noise = this.audioContext.createBufferSource();
+    noise.buffer = noiseBuffer;
+    noise.loop = true;
+    let gain = this.audioContext.createGain();
+    gain.gain.value = 0; // Start silent
+    noise.connect(gain).connect(this.audioContext.destination);
+    noise.start(0);
+    this.brownNoise = noise;
+    this.gainNode = gain;
     this.isPlaying = true;
   }
 
@@ -91,6 +102,11 @@ class InteractiveBreathingApp {
     document.addEventListener('contextmenu', (e) => {
       e.preventDefault();
     });
+
+    // Update cursors on resize
+    window.addEventListener('resize', () => {
+      this.setupCursors();
+    });
   }
 
   createCircle(x, y) {
@@ -119,6 +135,9 @@ class InteractiveBreathingApp {
     
     this.circles.push(circleData);
     document.body.appendChild(circle);
+    
+    // Set cursor for the new circle
+    circle.style.cursor = this.makeCursor('#B7E7A7'); // green dot for circles
     
     // Start audio when first circle is created
     if (this.circles.length === 1 && this.gainNode) {
