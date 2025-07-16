@@ -130,8 +130,7 @@ class InteractiveBreathingApp {
       centerX: x,
       centerY: y,
       size: size,
-      scale: 1,
-      currentSize: size
+      scale: 1
     };
     
     this.circles.push(circleData);
@@ -144,16 +143,10 @@ class InteractiveBreathingApp {
     if (this.circles.length === 1 && this.gainNode) {
       // Resume audio context if suspended
       if (this.audioContext.state === 'suspended') {
-        this.audioContext.resume().then(() => {
-          // Smoothly ramp up the volume after context is resumed
-          this.gainNode.gain.setValueAtTime(0.02, this.audioContext.currentTime);
-          this.gainNode.gain.linearRampToValueAtTime(0.12, this.audioContext.currentTime + 0.5);
-        });
-      } else {
-        // Smoothly ramp up the volume
-        this.gainNode.gain.setValueAtTime(0.02, this.audioContext.currentTime);
-        this.gainNode.gain.linearRampToValueAtTime(0.12, this.audioContext.currentTime + 0.5);
+        this.audioContext.resume();
       }
+      // Set initial volume
+      this.gainNode.gain.setValueAtTime(0.12, this.audioContext.currentTime);
     }
     
     return circleData;
@@ -167,7 +160,7 @@ class InteractiveBreathingApp {
       
       // Stop audio when all circles are deleted
       if (this.circles.length === 0 && this.gainNode) {
-        this.gainNode.gain.linearRampToValueAtTime(0, this.audioContext.currentTime + 0.3);
+        this.gainNode.gain.setValueAtTime(0, this.audioContext.currentTime);
       }
     }
   }
@@ -181,36 +174,38 @@ class InteractiveBreathingApp {
 
   scaleCircle(circle, direction) {
     const scaleChange = 0.1;
-    const oldScale = circle.scale;
     circle.scale += direction * scaleChange;
     circle.scale = Math.max(0.5, Math.min(2, circle.scale)); // Limit scale between 0.5x and 2x
     
-    // Only update if scale actually changed
-    if (Math.abs(circle.scale - oldScale) > 0.01) {
-      const newSize = Math.round(this.baseSize * circle.scale);
-      circle.size = newSize;
-      circle.currentSize = newSize;
-      circle.element.style.width = newSize + 'px';
-      circle.element.style.height = newSize + 'px';
-      
-      // Keep the circle centered at its original position
-      const newLeft = Math.round(circle.centerX - newSize / 2);
-      const newTop = Math.round(circle.centerY - newSize / 2);
-      circle.element.style.left = newLeft + 'px';
-      circle.element.style.top = newTop + 'px';
-    }
+    const newSize = Math.round(this.baseSize * circle.scale);
+    circle.size = newSize;
+    circle.element.style.width = newSize + 'px';
+    circle.element.style.height = newSize + 'px';
+    
+    // Keep the circle centered at its original position
+    const newLeft = Math.round(circle.centerX - newSize / 2);
+    const newTop = Math.round(circle.centerY - newSize / 2);
+    circle.element.style.left = newLeft + 'px';
+    circle.element.style.top = newTop + 'px';
   }
 
   startBreathingCycle() {
+    let lastFrameTime = Date.now();
+    
     const animate = () => {
       const currentTime = Date.now();
-      const timeSinceLastBreath = currentTime - this.lastBreathTime;
-      const progress = timeSinceLastBreath / this.breathTime;
+      const deltaTime = currentTime - lastFrameTime;
+      lastFrameTime = currentTime;
       
+      // Calculate progress within the current breath phase
+      const timeSinceLastBreath = currentTime - this.lastBreathTime;
+      let progress = timeSinceLastBreath / this.breathTime;
+      
+      // Handle phase transition
       if (progress >= 1) {
-        // Switch breath phase
         this.breathPhase = this.breathPhase === 'inhale' ? 'exhale' : 'inhale';
         this.lastBreathTime = currentTime;
+        progress = 0; // Reset progress for new phase
       }
       
       // Update all circles
@@ -218,14 +213,14 @@ class InteractiveBreathingApp {
         this.updateCircle(circle, progress);
       });
       
-      // Update audio volume with smoother transitions
+      // Update audio volume
       if (this.gainNode && this.circles.length > 0 && this.audioContext.state === 'running') {
         const volume = this.breathPhase === 'inhale' ? 
           this.easeInOut(progress, 0.02, 0.12) : 
           this.easeInOut(progress, 0.12, 0.02);
         
-        // Use linearRampToValueAtTime for smoother audio transitions
-        this.gainNode.gain.linearRampToValueAtTime(volume, this.audioContext.currentTime + 0.1);
+        // Use exponentialRampToValueAtTime for even smoother transitions
+        this.gainNode.gain.exponentialRampToValueAtTime(Math.max(0.001, volume), this.audioContext.currentTime + 0.05);
       }
       
       requestAnimationFrame(animate);
@@ -235,7 +230,6 @@ class InteractiveBreathingApp {
   }
 
   updateCircle(circle, progress) {
-    const baseSize = this.baseSize * circle.scale;
     const minSize = this.minSize * circle.scale;
     const maxSize = this.maxSize * circle.scale;
     
@@ -249,18 +243,15 @@ class InteractiveBreathingApp {
     // Round to prevent sub-pixel rendering issues
     currentSize = Math.round(currentSize);
     
-    // Only update if size actually changed to prevent unnecessary DOM updates
-    if (Math.abs(currentSize - circle.currentSize) > 0.5) {
-      circle.currentSize = currentSize;
-      circle.element.style.width = currentSize + 'px';
-      circle.element.style.height = currentSize + 'px';
-      
-      // Keep the circle centered at its original position
-      const newLeft = Math.round(circle.centerX - currentSize / 2);
-      const newTop = Math.round(circle.centerY - currentSize / 2);
-      circle.element.style.left = newLeft + 'px';
-      circle.element.style.top = newTop + 'px';
-    }
+    // Update size and position
+    circle.element.style.width = currentSize + 'px';
+    circle.element.style.height = currentSize + 'px';
+    
+    // Keep the circle centered at its original position
+    const newLeft = Math.round(circle.centerX - currentSize / 2);
+    const newTop = Math.round(circle.centerY - currentSize / 2);
+    circle.element.style.left = newLeft + 'px';
+    circle.element.style.top = newTop + 'px';
   }
 
 
