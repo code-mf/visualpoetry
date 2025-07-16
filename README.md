@@ -9,6 +9,9 @@ multi-apps-demo/
   breathing-app/
     index.html
     script.js
+  breathe-interactive/
+    index.html
+    script.js
   another-app/
     index.html
     ...
@@ -32,6 +35,7 @@ multi-apps-demo/
    - Each project will be available at:
      - `https://<your-username>.github.io/<repo-name>/<project-folder>/`
    - Example: `https://your-username.github.io/multi-apps-demo/breathing-app/`
+   - Example: `https://your-username.github.io/multi-apps-demo/breathe-interactive/`
 
 ## Adding More Projects
 - Just add a new folder for each project and push to GitHub.
