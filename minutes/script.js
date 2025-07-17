@@ -1,31 +1,36 @@
-class MinutesVisualization {
+class DayMinutesVisualization {
   constructor() {
     this.container = document.getElementById('container');
-    this.circles = [];
+    this.minutes = [];
     this.init();
   }
 
   init() {
-    this.createCircles();
+    this.createMinutes();
     this.updateTime();
     
-    // Update every second for real-time minute tracking
+    // Update every second for real-time tracking
     setInterval(() => this.updateTime(), 1000);
   }
 
-  createCircles() {
+  createMinutes() {
     // Clear container
     this.container.innerHTML = '';
-    this.circles = [];
+    this.minutes = [];
     
-    // Create 60 circles (one for each minute: 0-59)
-    for (let i = 0; i < 60; i++) {
-      const circle = document.createElement('div');
-      circle.className = 'circle empty';
-      circle.dataset.minute = i;
+    // Create 1,440 minutes (24 hours × 60 minutes)
+    for (let i = 0; i < 1440; i++) {
+      const minute = document.createElement('div');
+      minute.className = 'minute empty';
+      minute.dataset.minute = i;
       
-      this.container.appendChild(circle);
-      this.circles.push(circle);
+      // Calculate hour and minute for this index
+      const hour = Math.floor(i / 60);
+      const min = i % 60;
+      minute.title = `${hour.toString().padStart(2, '0')}:${min.toString().padStart(2, '0')}`;
+      
+      this.container.appendChild(minute);
+      this.minutes.push(minute);
     }
   }
 
@@ -35,36 +40,43 @@ class MinutesVisualization {
     const currentMinute = now.getMinutes();
     const currentSecond = now.getSeconds();
     
-    // Calculate remaining minutes in the current hour (including current minute)
-    const remainingMinutes = 60 - currentMinute;
+    // Calculate current minute index (0-1439)
+    const currentMinuteIndex = (currentHour * 60) + currentMinute;
     
-    // Update each circle
-    this.circles.forEach((circle, index) => {
-      if (index >= currentMinute) {
-        // This minute hasn't passed yet - fill it
-        circle.className = 'circle filled';
+    // Calculate remaining minutes in the day
+    const remainingMinutes = 1440 - currentMinuteIndex;
+    
+    // Update each minute circle
+    this.minutes.forEach((minute, index) => {
+      if (index === currentMinuteIndex) {
+        // Current minute - special highlight
+        minute.className = 'minute current';
+      } else if (index > currentMinuteIndex) {
+        // Future minutes - filled
+        minute.className = 'minute filled';
       } else {
-        // This minute has passed - leave it empty
-        circle.className = 'circle empty';
+        // Past minutes - empty
+        minute.className = 'minute empty';
       }
     });
     
     // Debug info
     const timeString = `${currentHour.toString().padStart(2, '0')}:${currentMinute.toString().padStart(2, '0')}:${currentSecond.toString().padStart(2, '0')}`;
     console.log(`Time: ${timeString}`);
-    console.log(`Current minute: ${currentMinute}, Remaining minutes: ${remainingMinutes}`);
-    console.log(`Filled circles: ${currentMinute} to 59 (${remainingMinutes} circles)`);
+    console.log(`Current minute index: ${currentMinuteIndex} of 1440`);
+    console.log(`Minutes passed: ${currentMinuteIndex}, Minutes remaining: ${remainingMinutes}`);
+    console.log(`Progress: ${((currentMinuteIndex / 1440) * 100).toFixed(2)}% of day complete`);
   }
 }
 
 // Start the visualization when page loads
 document.addEventListener('DOMContentLoaded', () => {
-  window.minutesViz = new MinutesVisualization();
+  window.dayMinutesViz = new DayMinutesVisualization();
 });
 
 // Update when tab becomes visible again
 document.addEventListener('visibilitychange', () => {
-  if (!document.hidden && window.minutesViz) {
-    window.minutesViz.updateTime();
+  if (!document.hidden && window.dayMinutesViz) {
+    window.dayMinutesViz.updateTime();
   }
 });
