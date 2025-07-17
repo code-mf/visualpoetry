@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Minutes</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      background: #000;
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      font-family: system-ui, -apple-system, sans-serif;
+    }
+    
+    .container {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      grid-template-rows: repeat(5, 1fr);
+      gap: clamp(3px, 1.5vmin, 12px);
+      width: min(95vw, 80vh * 2.4);
+      height: min(39.58vw, 80vh);
+      padding: clamp(8px, 2.5vmin, 30px);
+    }
+    
+    .circle {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      border: clamp(1px, 0.2vmin, 2px) solid #222;
+      background: transparent;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      aspect-ratio: 1;
+    }
+    
+    .circle.filled {
+      background: #fff;
+      border-color: #fff;
+      box-shadow: 0 0 clamp(2px, 0.5vmin, 6px) rgba(255, 255, 255, 0.4);
+    }
+    
+    .circle.empty {
+      background: transparent;
+      border-color: #222;
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 1024px) {
+      .container {
+        gap: clamp(2px, 1.2vmin, 10px);
+        width: min(97vw, 85vh * 2.4);
+        height: min(40.42vw, 85vh);
+        padding: clamp(6px, 2vmin, 25px);
+      }
+    }
+    
+    @media (max-width: 768px) {
+      .container {
+        gap: clamp(2px, 1vmin, 8px);
+        width: min(98vw, 90vh * 2.4);
+        height: min(40.83vw, 90vh);
+        padding: clamp(5px, 1.8vmin, 20px);
+      }
+      
+      .circle {
+        border-width: clamp(1px, 0.15vmin, 1.5px);
+      }
+    }
+    
+    @media (max-width: 480px) {
+      .container {
+        gap: clamp(1px, 0.8vmin, 6px);
+        width: min(99vw, 95vh * 2.4);
+        height: min(41.25vw, 95vh);
+        padding: clamp(4px, 1.5vmin, 18px);
+      }
+      
+      .circle {
+        border-width: clamp(1px, 0.12vmin, 1.5px);
+      }
+    }
+    
+    @media (orientation: portrait) and (max-width: 480px) {
+      .container {
+        width: min(99vw, 70vh * 2.4);
+        height: min(41.25vw, 70vh);
+        gap: clamp(1px, 0.6vmin, 5px);
+      }
+    }
+    
+    /* Very small screens */
+    @media (max-width: 320px) {
+      .container {
+        gap: clamp(1px, 0.5vmin, 4px);
+        padding: clamp(3px, 1vmin, 15px);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container" id="container"></div>
+  <script src="script.js"></script>
+</body>
+</html>
