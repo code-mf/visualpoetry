@@ -9,7 +9,7 @@ class DayMinutesVisualization {
     this.createMinutes();
     this.updateTime();
     
-    // Update every second for real-time tracking
+    // Update every second for real-time tracking and fading effect
     setInterval(() => this.updateTime(), 1000);
   }
 
@@ -21,7 +21,7 @@ class DayMinutesVisualization {
     // Create 1,440 minutes (24 hours × 60 minutes)
     for (let i = 0; i < 1440; i++) {
       const minute = document.createElement('div');
-      minute.className = 'minute empty';
+      minute.className = 'minute past';
       minute.dataset.minute = i;
       
       // Calculate hour and minute for this index
@@ -46,17 +46,25 @@ class DayMinutesVisualization {
     // Calculate remaining minutes in the day
     const remainingMinutes = 1440 - currentMinuteIndex;
     
+    // Calculate fade opacity for current minute based on seconds
+    // Starts at 1.0 (fully filled) at second 0, fades to 0.1 at second 59
+    const fadeProgress = currentSecond / 59; // 0 to 1
+    const opacity = 1.0 - (fadeProgress * 0.9); // 1.0 to 0.1
+    
     // Update each minute circle
     this.minutes.forEach((minute, index) => {
-      if (index === currentMinuteIndex) {
-        // Current minute - special highlight
+      if (index < currentMinuteIndex) {
+        // Past minutes - stroke only
+        minute.className = 'minute past';
+        minute.style.opacity = '';
+      } else if (index === currentMinuteIndex) {
+        // Current minute - fading based on seconds
         minute.className = 'minute current';
-      } else if (index > currentMinuteIndex) {
-        // Future minutes - filled
-        minute.className = 'minute filled';
+        minute.style.opacity = opacity.toFixed(2);
       } else {
-        // Past minutes - empty
-        minute.className = 'minute empty';
+        // Future minutes - filled
+        minute.className = 'minute future';
+        minute.style.opacity = '';
       }
     });
     
@@ -64,6 +72,7 @@ class DayMinutesVisualization {
     const timeString = `${currentHour.toString().padStart(2, '0')}:${currentMinute.toString().padStart(2, '0')}:${currentSecond.toString().padStart(2, '0')}`;
     console.log(`Time: ${timeString}`);
     console.log(`Current minute index: ${currentMinuteIndex} of 1440`);
+    console.log(`Current minute opacity: ${opacity.toFixed(2)} (${currentSecond}s)`);
     console.log(`Minutes passed: ${currentMinuteIndex}, Minutes remaining: ${remainingMinutes}`);
     console.log(`Progress: ${((currentMinuteIndex / 1440) * 100).toFixed(2)}% of day complete`);
   }
