@@ -13,7 +13,7 @@ class MinutesVisualization {
     this.createGrid();
     this.updateTime();
     
-    // Update every second
+    // Update every second for smooth fading
     setInterval(() => this.updateTime(), 1000);
   }
 
@@ -30,15 +30,15 @@ class MinutesVisualization {
       const rowMinutes = [];
       
       for (let col = 0; col < this.cols; col++) {
-        const minuteIndex = (row * this.cols) + col;
+        const minuteIndex = row * this.cols + col;
         
-        // Only create if we haven't exceeded total minutes in a day
+        // Only create circles for valid minutes (0-1439)
         if (minuteIndex < this.totalMinutes) {
           const minute = document.createElement('div');
-          minute.className = 'minute';
+          minute.className = 'minute past';
           minute.dataset.index = minuteIndex;
           
-          // Calculate time for tooltip
+          // Calculate hour and minute for tooltip
           const hour = Math.floor(minuteIndex / 60);
           const min = minuteIndex % 60;
           minute.title = `${hour.toString().padStart(2, '0')}:${min.toString().padStart(2, '0')}`;
@@ -48,10 +48,8 @@ class MinutesVisualization {
         }
       }
       
-      if (rowMinutes.length > 0) {
-        this.container.appendChild(rowElement);
-        this.minutes.push(...rowMinutes);
-      }
+      this.container.appendChild(rowElement);
+      this.minutes.push(rowMinutes);
     }
   }
 
@@ -62,49 +60,49 @@ class MinutesVisualization {
     const currentSecond = now.getSeconds();
     
     // Calculate current minute index (0-1439)
-    const currentMinuteIndex = (currentHour * 60) + currentMinute;
+    const currentMinuteIndex = currentHour * 60 + currentMinute;
     
-    // Calculate remaining minutes including current minute
-    const remainingMinutes = this.totalMinutes - currentMinuteIndex;
+    // Calculate how much of the current minute has passed (0-1)
+    const secondsProgress = currentSecond / 60;
     
-    // Calculate fade for current minute (optional)
-    const fadeProgress = currentSecond / 60;
-    const opacity = 1.0 - (fadeProgress * 0.5); // Fade from 1.0 to 0.5
+    // Calculate opacity for current minute (fade from 1 to 0)
+    const currentMinuteOpacity = 1 - secondsProgress;
     
-    // Update each minute circle
-    this.minutes.forEach((minute, index) => {
-      if (index < currentMinuteIndex) {
-        // Past minutes - stroke only (empty)
-        minute.className = 'minute';
-        minute.style.opacity = '';
-      } else if (index === currentMinuteIndex) {
-        // Current minute - highlighted with optional fade
-        minute.className = 'minute current';
-        minute.style.opacity = opacity.toFixed(2);
-      } else {
-        // Future/remaining minutes - filled
-        minute.className = 'minute filled';
-        minute.style.opacity = '';
+    console.log(`Time: ${currentHour}:${currentMinute.toString().padStart(2, '0')}:${currentSecond.toString().padStart(2, '0')}`);
+    console.log(`Current minute index: ${currentMinuteIndex}, Opacity: ${currentMinuteOpacity.toFixed(2)}`);
+    console.log(`Remaining minutes in day: ${1440 - currentMinuteIndex - 1}`);
+    
+    // Update all minute circles
+    for (let row = 0; row < this.rows; row++) {
+      for (let col = 0; col < this.cols; col++) {
+        const minuteIndex = row * this.cols + col;
+        
+        if (minuteIndex < this.totalMinutes && this.minutes[row] && this.minutes[row][col]) {
+          const minuteElement = this.minutes[row][col];
+          
+          // Remove all state classes
+          minuteElement.classList.remove('past', 'current', 'future');
+          
+          if (minuteIndex < currentMinuteIndex) {
+            // Past minutes: stroke only
+            minuteElement.classList.add('past');
+            minuteElement.style.opacity = '';
+          } else if (minuteIndex === currentMinuteIndex) {
+            // Current minute: fading from white to transparent
+            minuteElement.classList.add('current');
+            minuteElement.style.opacity = currentMinuteOpacity;
+          } else {
+            // Future minutes (remaining minutes): filled white
+            minuteElement.classList.add('future');
+            minuteElement.style.opacity = '';
+          }
+        }
       }
-    });
-    
-    // Debug info
-    const timeString = `${currentHour.toString().padStart(2, '0')}:${currentMinute.toString().padStart(2, '0')}:${currentSecond.toString().padStart(2, '0')}`;
-    console.log(`Time: ${timeString}`);
-    console.log(`Current minute: ${currentMinuteIndex} of ${this.totalMinutes}`);
-    console.log(`Remaining minutes: ${remainingMinutes} (including current)`);
-    console.log(`Progress: ${((currentMinuteIndex / this.totalMinutes) * 100).toFixed(1)}% of day complete`);
+    }
   }
 }
 
-// Start when page loads
+// Initialize when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
-  window.minutesViz = new MinutesVisualization();
-});
-
-// Update when tab becomes visible
-document.addEventListener('visibilitychange', () => {
-  if (!document.hidden && window.minutesViz) {
-    window.minutesViz.updateTime();
-  }
+  new MinutesVisualization();
 });
