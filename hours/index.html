@@ -14,8 +14,6 @@
     body {
       width: 100vw;
       height: 100vh;
-      min-height: 100vh;
-      min-width: 100vw;
       overflow: hidden;
       display: flex;
       align-items: center;
@@ -24,23 +22,23 @@
     }
     
     .hours-container {
-      width: 100%;
-      height: 100%;
       display: grid;
       grid-template-columns: repeat(6, 1fr);
       grid-template-rows: repeat(4, 1fr);
-      gap: 1vmin;
-      padding: 2vmin;
-      box-sizing: border-box;
+      gap: min(2vw, 2vh);
+      width: min(90vw, 80vh * 1.5);
+      height: min(60vw, 80vh);
+      max-width: 90vw;
+      max-height: 90vh;
     }
     
     .hour-circle {
       aspect-ratio: 1;
       border-radius: 50%;
-      border: 2px solid #ffffff;
+      border: min(0.3vw, 0.3vh, 3px) solid #ffffff;
       transition: all 0.3s ease;
-      min-width: 0;
-      min-height: 0;
+      width: 100%;
+      height: 100%;
     }
     
     .hour-circle.filled {
@@ -51,26 +49,51 @@
       background-color: transparent;
     }
     
-    /* Ensure all 24 circles fit on smaller screens */
-    @media (max-width: 768px) {
+    /* Tablet landscape and smaller */
+    @media (max-width: 1024px) {
       .hours-container {
-        gap: 0.8vmin;
-        padding: 1.5vmin;
+        gap: min(1.5vw, 1.5vh);
+        width: min(92vw, 85vh * 1.5);
+        height: min(61vw, 85vh);
       }
       
       .hour-circle {
-        border-width: 1px;
+        border-width: min(0.25vw, 0.25vh, 2px);
       }
     }
     
-    @media (max-width: 480px) {
+    /* Mobile landscape and smaller */
+    @media (max-width: 768px) {
       .hours-container {
-        gap: 0.5vmin;
-        padding: 1vmin;
+        gap: min(1vw, 1vh);
+        width: min(95vw, 90vh * 1.5);
+        height: min(63vw, 90vh);
       }
       
       .hour-circle {
-        border-width: 1px;
+        border-width: min(0.2vw, 0.2vh, 2px);
+      }
+    }
+    
+    /* Mobile portrait */
+    @media (max-width: 480px) {
+      .hours-container {
+        gap: min(0.8vw, 0.8vh);
+        width: min(98vw, 95vh * 1.5);
+        height: min(65vw, 95vh);
+      }
+      
+      .hour-circle {
+        border-width: min(0.15vw, 0.15vh, 1px);
+      }
+    }
+    
+    /* Very small screens */
+    @media (max-width: 320px) {
+      .hours-container {
+        gap: min(0.5vw, 0.5vh);
+        width: 99vw;
+        height: min(66vw, 98vh);
       }
     }
   </style>

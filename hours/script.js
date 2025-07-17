@@ -14,13 +14,18 @@ class HoursVisualization {
     setInterval(() => {
       this.updateDisplay();
     }, 60000);
+    
+    // Also update every 10 seconds for testing
+    setInterval(() => {
+      this.updateDisplay();
+    }, 10000);
   }
   
   createHourCircles() {
-    // Create 24 circles for 24 hours
+    // Create 24 circles for 24 hours (0-23)
     for (let i = 0; i < 24; i++) {
       const circle = document.createElement('div');
-      circle.className = 'hour-circle';
+      circle.className = 'hour-circle empty'; // Start with empty class
       circle.setAttribute('data-hour', i);
       
       this.hoursContainer.appendChild(circle);
@@ -30,17 +35,12 @@ class HoursVisualization {
   
   updateDisplay() {
     const now = new Date();
-    const currentHour = now.getHours();
+    const currentHour = now.getHours(); // 0-23
     
-    // Calculate how many hours are left in the day (including current hour)
-    const hoursRemaining = 24 - currentHour;
-    
-    // Update circles - only the remaining hours should be filled
+    // Update circles - fill the remaining hours (current hour onwards)
     this.circles.forEach((circle, index) => {
-      const hour = index;
-      
-      // If this hour is one of the remaining hours of the day, fill it
-      if (hour >= currentHour) {
+      // If this circle represents current hour or later, fill it
+      if (index >= currentHour) {
         circle.classList.remove('empty');
         circle.classList.add('filled');
       } else {
@@ -48,27 +48,20 @@ class HoursVisualization {
         circle.classList.add('empty');
       }
     });
+    
+    // Console log for debugging (remove in production)
+    console.log(`Current hour: ${currentHour}, Filled circles: ${currentHour}-23`);
   }
 }
 
 // Initialize when the page loads
 document.addEventListener('DOMContentLoaded', () => {
-  new HoursVisualization();
+  window.hoursViz = new HoursVisualization();
 });
 
 // Handle visibility change to update when user returns to tab
 document.addEventListener('visibilitychange', () => {
-  if (!document.hidden) {
-    // Force update when tab becomes visible again
-    setTimeout(() => {
-      if (window.hoursViz) {
-        window.hoursViz.updateDisplay();
-      }
-    }, 100);
+  if (!document.hidden && window.hoursViz) {
+    window.hoursViz.updateDisplay();
   }
-});
-
-// Store reference globally
-document.addEventListener('DOMContentLoaded', () => {
-  window.hoursViz = new HoursVisualization();
 });
