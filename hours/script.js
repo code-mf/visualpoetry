@@ -1,67 +1,71 @@
-class HoursVisualization {
+class TimeVisualization {
   constructor() {
-    this.hoursContainer = document.getElementById('hoursContainer');
+    this.container = document.getElementById('container');
     this.circles = [];
-    
     this.init();
   }
-  
+
   init() {
-    this.createHourCircles();
-    this.updateDisplay();
+    this.createCircles();
+    this.updateTime();
     
     // Update every minute
-    setInterval(() => {
-      this.updateDisplay();
-    }, 60000);
+    setInterval(() => this.updateTime(), 60000);
     
-    // Also update every 10 seconds for testing
-    setInterval(() => {
-      this.updateDisplay();
-    }, 10000);
+    // Update every 5 seconds for testing
+    setInterval(() => this.updateTime(), 5000);
   }
-  
-  createHourCircles() {
-    // Create 24 circles for 24 hours (0-23)
+
+  createCircles() {
+    // Clear container
+    this.container.innerHTML = '';
+    this.circles = [];
+    
+    // Create 24 circles (one for each hour: 0-23)
     for (let i = 0; i < 24; i++) {
       const circle = document.createElement('div');
-      circle.className = 'hour-circle empty'; // Start with empty class
-      circle.setAttribute('data-hour', i);
+      circle.className = 'circle empty';
+      circle.dataset.hour = i;
       
-      this.hoursContainer.appendChild(circle);
+      this.container.appendChild(circle);
       this.circles.push(circle);
     }
   }
-  
-  updateDisplay() {
+
+  updateTime() {
     const now = new Date();
     const currentHour = now.getHours(); // 0-23
+    const currentMinute = now.getMinutes();
     
-    // Update circles - fill the remaining hours (current hour onwards)
+    // Calculate remaining hours in the day (including current hour)
+    const remainingHours = 24 - currentHour;
+    
+    // Update each circle
     this.circles.forEach((circle, index) => {
-      // If this circle represents current hour or later, fill it
       if (index >= currentHour) {
-        circle.classList.remove('empty');
-        circle.classList.add('filled');
+        // This hour hasn't passed yet - fill it
+        circle.className = 'circle filled';
       } else {
-        circle.classList.remove('filled');
-        circle.classList.add('empty');
+        // This hour has passed - leave it empty
+        circle.className = 'circle empty';
       }
     });
     
-    // Console log for debugging (remove in production)
-    console.log(`Current hour: ${currentHour}, Filled circles: ${currentHour}-23`);
+    // Debug info
+    console.log(`Time: ${currentHour}:${currentMinute.toString().padStart(2, '0')}`);
+    console.log(`Current hour: ${currentHour}, Remaining hours: ${remainingHours}`);
+    console.log(`Filled circles: ${currentHour} to 23 (${remainingHours} circles)`);
   }
 }
 
-// Initialize when the page loads
+// Start the visualization when page loads
 document.addEventListener('DOMContentLoaded', () => {
-  window.hoursViz = new HoursVisualization();
+  window.timeViz = new TimeVisualization();
 });
 
-// Handle visibility change to update when user returns to tab
+// Update when tab becomes visible again
 document.addEventListener('visibilitychange', () => {
-  if (!document.hidden && window.hoursViz) {
-    window.hoursViz.updateDisplay();
+  if (!document.hidden && window.timeViz) {
+    window.timeViz.updateTime();
   }
 });
