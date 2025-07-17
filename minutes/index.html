@@ -22,139 +22,97 @@
       font-family: system-ui, -apple-system, sans-serif;
     }
     
-    .container {
-      display: grid;
-      grid-template-columns: repeat(48, 1fr);
-      grid-template-rows: repeat(30, 1fr);
-      gap: clamp(1px, 0.3vmin, 4px);
-      width: 100vw;
-      height: 100vh;
-      padding: clamp(4px, 1.5vmin, 20px);
-      box-sizing: border-box;
+    .grid-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: clamp(1px, 0.5vmin, 4px);
+      padding: clamp(5px, 2vmin, 20px);
+    }
+    
+    .row {
+      display: flex;
+      gap: clamp(1px, 0.5vmin, 4px);
+      align-items: center;
+      justify-content: center;
     }
     
     .minute {
-      width: 100%;
-      height: 100%;
+      width: clamp(3px, 1.5vmin, 12px);
+      height: clamp(3px, 1.5vmin, 12px);
       border-radius: 50%;
-      border: clamp(0.3px, 0.1vmin, 1.5px) solid #333;
+      border: clamp(0.3px, 0.15vmin, 1px) solid #444;
       background: transparent;
-      transition: background-color 0.1s ease, border-color 0.1s ease;
-      aspect-ratio: 1;
-      max-width: clamp(8px, 2vmin, 25px);
-      max-height: clamp(8px, 2vmin, 25px);
-      justify-self: center;
-      align-self: center;
+      transition: all 0.3s ease;
     }
     
-    /* Past minutes - stroke only */
-    .minute.past {
-      background: transparent;
-      border-color: #444;
-    }
-    
-    /* Future minutes - filled white */
-    .minute.future {
+    .minute.filled {
       background: #fff;
       border-color: #fff;
-      box-shadow: 0 0 clamp(1px, 0.2vmin, 3px) rgba(255, 255, 255, 0.3);
+      box-shadow: 0 0 clamp(1px, 0.3vmin, 3px) rgba(255, 255, 255, 0.4);
     }
     
-    /* Current minute - will fade with seconds */
     .minute.current {
       background: #fff;
       border-color: #fff;
-      box-shadow: 0 0 clamp(2px, 0.4vmin, 6px) rgba(255, 255, 255, 0.8);
+      box-shadow: 0 0 clamp(2px, 0.6vmin, 6px) rgba(255, 255, 255, 0.8);
     }
     
-    /* Responsive adjustments for better scaling */
-    @media (max-width: 1400px) {
-      .container {
-        gap: clamp(0.8px, 0.25vmin, 3px);
-        padding: clamp(3px, 1.2vmin, 18px);
+    /* Responsive sizing */
+    @media (max-width: 1200px) {
+      .grid-container {
+        gap: clamp(0.8px, 0.4vmin, 3px);
+        padding: clamp(4px, 1.8vmin, 18px);
+      }
+      
+      .row {
+        gap: clamp(0.8px, 0.4vmin, 3px);
       }
       
       .minute {
-        max-width: clamp(7px, 1.8vmin, 22px);
-        max-height: clamp(7px, 1.8vmin, 22px);
-      }
-    }
-    
-    @media (max-width: 1024px) {
-      .container {
-        gap: clamp(0.6px, 0.2vmin, 2.5px);
-        padding: clamp(2px, 1vmin, 15px);
-      }
-      
-      .minute {
-        max-width: clamp(6px, 1.6vmin, 20px);
-        max-height: clamp(6px, 1.6vmin, 20px);
-        border-width: clamp(0.2px, 0.08vmin, 1.2px);
+        width: clamp(2.5px, 1.3vmin, 10px);
+        height: clamp(2.5px, 1.3vmin, 10px);
       }
     }
     
     @media (max-width: 768px) {
-      .container {
-        gap: clamp(0.4px, 0.15vmin, 2px);
-        padding: clamp(1.5px, 0.8vmin, 12px);
+      .grid-container {
+        gap: clamp(0.5px, 0.3vmin, 2px);
+        padding: clamp(3px, 1.5vmin, 15px);
+      }
+      
+      .row {
+        gap: clamp(0.5px, 0.3vmin, 2px);
       }
       
       .minute {
-        max-width: clamp(5px, 1.4vmin, 18px);
-        max-height: clamp(5px, 1.4vmin, 18px);
-        border-width: clamp(0.15px, 0.06vmin, 1px);
+        width: clamp(2px, 1.1vmin, 8px);
+        height: clamp(2px, 1.1vmin, 8px);
+        border-width: clamp(0.2px, 0.1vmin, 0.8px);
       }
     }
     
     @media (max-width: 480px) {
-      .container {
-        gap: clamp(0.2px, 0.1vmin, 1.5px);
-        padding: clamp(1px, 0.6vmin, 10px);
+      .grid-container {
+        gap: clamp(0.3px, 0.2vmin, 1.5px);
+        padding: clamp(2px, 1vmin, 12px);
+      }
+      
+      .row {
+        gap: clamp(0.3px, 0.2vmin, 1.5px);
       }
       
       .minute {
-        max-width: clamp(4px, 1.2vmin, 15px);
-        max-height: clamp(4px, 1.2vmin, 15px);
-        border-width: clamp(0.1px, 0.04vmin, 0.8px);
-      }
-    }
-    
-    @media (max-width: 320px) {
-      .container {
-        gap: clamp(0.1px, 0.05vmin, 1px);
-        padding: clamp(0.5px, 0.4vmin, 8px);
-      }
-      
-      .minute {
-        max-width: clamp(3px, 1vmin, 12px);
-        max-height: clamp(3px, 1vmin, 12px);
-        border-width: clamp(0.1px, 0.03vmin, 0.6px);
-      }
-    }
-    
-    /* Portrait orientation adjustments */
-    @media (orientation: portrait) {
-      .container {
-        padding: clamp(2px, 1vmin, 15px);
-      }
-    }
-    
-    /* Landscape orientation adjustments */
-    @media (orientation: landscape) and (max-height: 600px) {
-      .container {
-        gap: clamp(0.3px, 0.12vmin, 2px);
-        padding: clamp(1px, 0.7vmin, 10px);
-      }
-      
-      .minute {
-        max-width: clamp(4px, 1.3vmin, 16px);
-        max-height: clamp(4px, 1.3vmin, 16px);
+        width: clamp(1.5px, 0.9vmin, 6px);
+        height: clamp(1.5px, 0.9vmin, 6px);
+        border-width: clamp(0.1px, 0.08vmin, 0.6px);
       }
     }
   </style>
 </head>
 <body>
-  <div class="container" id="container"></div>
+  <div class="grid-container" id="container"></div>
   <script src="script.js"></script>
 </body>
 </html>

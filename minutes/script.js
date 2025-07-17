@@ -1,36 +1,57 @@
-class DayMinutesVisualization {
+class MinutesVisualization {
   constructor() {
     this.container = document.getElementById('container');
     this.minutes = [];
+    this.rows = 30;
+    this.cols = 48;
+    this.totalMinutes = 1440; // 24 hours * 60 minutes
+    
     this.init();
   }
 
   init() {
-    this.createMinutes();
+    this.createGrid();
     this.updateTime();
     
-    // Update every second for real-time tracking and fading effect
+    // Update every second
     setInterval(() => this.updateTime(), 1000);
   }
 
-  createMinutes() {
+  createGrid() {
     // Clear container
     this.container.innerHTML = '';
     this.minutes = [];
     
-    // Create 1,440 minutes (24 hours × 60 minutes)
-    for (let i = 0; i < 1440; i++) {
-      const minute = document.createElement('div');
-      minute.className = 'minute past';
-      minute.dataset.minute = i;
+    // Create grid using nested loops
+    for (let row = 0; row < this.rows; row++) {
+      const rowElement = document.createElement('div');
+      rowElement.className = 'row';
       
-      // Calculate hour and minute for this index
-      const hour = Math.floor(i / 60);
-      const min = i % 60;
-      minute.title = `${hour.toString().padStart(2, '0')}:${min.toString().padStart(2, '0')}`;
+      const rowMinutes = [];
       
-      this.container.appendChild(minute);
-      this.minutes.push(minute);
+      for (let col = 0; col < this.cols; col++) {
+        const minuteIndex = (row * this.cols) + col;
+        
+        // Only create if we haven't exceeded total minutes in a day
+        if (minuteIndex < this.totalMinutes) {
+          const minute = document.createElement('div');
+          minute.className = 'minute';
+          minute.dataset.index = minuteIndex;
+          
+          // Calculate time for tooltip
+          const hour = Math.floor(minuteIndex / 60);
+          const min = minuteIndex % 60;
+          minute.title = `${hour.toString().padStart(2, '0')}:${min.toString().padStart(2, '0')}`;
+          
+          rowElement.appendChild(minute);
+          rowMinutes.push(minute);
+        }
+      }
+      
+      if (rowMinutes.length > 0) {
+        this.container.appendChild(rowElement);
+        this.minutes.push(...rowMinutes);
+      }
     }
   }
 
@@ -43,27 +64,26 @@ class DayMinutesVisualization {
     // Calculate current minute index (0-1439)
     const currentMinuteIndex = (currentHour * 60) + currentMinute;
     
-    // Calculate remaining minutes in the day
-    const remainingMinutes = 1440 - currentMinuteIndex;
+    // Calculate remaining minutes including current minute
+    const remainingMinutes = this.totalMinutes - currentMinuteIndex;
     
-    // Calculate fade opacity for current minute based on seconds
-    // Starts at 1.0 (fully filled) at second 0, fades to 0.1 at second 59
-    const fadeProgress = currentSecond / 59; // 0 to 1
-    const opacity = 1.0 - (fadeProgress * 0.9); // 1.0 to 0.1
+    // Calculate fade for current minute (optional)
+    const fadeProgress = currentSecond / 60;
+    const opacity = 1.0 - (fadeProgress * 0.5); // Fade from 1.0 to 0.5
     
     // Update each minute circle
     this.minutes.forEach((minute, index) => {
       if (index < currentMinuteIndex) {
-        // Past minutes - stroke only
-        minute.className = 'minute past';
+        // Past minutes - stroke only (empty)
+        minute.className = 'minute';
         minute.style.opacity = '';
       } else if (index === currentMinuteIndex) {
-        // Current minute - fading based on seconds
+        // Current minute - highlighted with optional fade
         minute.className = 'minute current';
         minute.style.opacity = opacity.toFixed(2);
       } else {
-        // Future minutes - filled
-        minute.className = 'minute future';
+        // Future/remaining minutes - filled
+        minute.className = 'minute filled';
         minute.style.opacity = '';
       }
     });
@@ -71,21 +91,20 @@ class DayMinutesVisualization {
     // Debug info
     const timeString = `${currentHour.toString().padStart(2, '0')}:${currentMinute.toString().padStart(2, '0')}:${currentSecond.toString().padStart(2, '0')}`;
     console.log(`Time: ${timeString}`);
-    console.log(`Current minute index: ${currentMinuteIndex} of 1440`);
-    console.log(`Current minute opacity: ${opacity.toFixed(2)} (${currentSecond}s)`);
-    console.log(`Minutes passed: ${currentMinuteIndex}, Minutes remaining: ${remainingMinutes}`);
-    console.log(`Progress: ${((currentMinuteIndex / 1440) * 100).toFixed(2)}% of day complete`);
+    console.log(`Current minute: ${currentMinuteIndex} of ${this.totalMinutes}`);
+    console.log(`Remaining minutes: ${remainingMinutes} (including current)`);
+    console.log(`Progress: ${((currentMinuteIndex / this.totalMinutes) * 100).toFixed(1)}% of day complete`);
   }
 }
 
-// Start the visualization when page loads
+// Start when page loads
 document.addEventListener('DOMContentLoaded', () => {
-  window.dayMinutesViz = new DayMinutesVisualization();
+  window.minutesViz = new MinutesVisualization();
 });
 
-// Update when tab becomes visible again
+// Update when tab becomes visible
 document.addEventListener('visibilitychange', () => {
-  if (!document.hidden && window.dayMinutesViz) {
-    window.dayMinutesViz.updateTime();
+  if (!document.hidden && window.minutesViz) {
+    window.minutesViz.updateTime();
   }
 });
